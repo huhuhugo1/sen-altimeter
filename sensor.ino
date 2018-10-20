@@ -7,7 +7,7 @@
 
 constexpr uint8_t SENSOR_SPI_ADDR = 0x77;
 constexpr uint8_t OSS = 3;
-constexpr uint8_t EOC_PIN = 2;
+constexpr uint8_t EOC_PIN = 23;
 constexpr uint8_t POWER_PIN = 22;
 
 constexpr char* BLE_NAME = "SENSOR";
@@ -154,7 +154,7 @@ class MyServerCallbacks: public BLEServerCallbacks {
 void setup() {
   pinMode(POWER_PIN, OUTPUT);
   Serial.begin(115200);
-  Wire.begin(4,5);
+  Wire.begin();
   
   controller = new BMP085Controller(POWER_PIN, EOC_PIN, SENSOR_SPI_ADDR, OSS);
   Serial.println(controller->_calibration_coeficients.AC5);
@@ -164,7 +164,7 @@ void setup() {
   BLE_server->setCallbacks(new MyServerCallbacks());
   BLEService* BLE_service = BLE_server->createService(SERVICE_UUID);
   
-  g_BLE_data = BLE_service->createCharacteristic(UUID_TEMP, BLECharacteristic::PROPERTY_NOTIFY);
+  g_BLE_data = BLE_service->createCharacteristic(UUID_TEMP, BLECharacteristic::PROPERTY_NOTIFY|BLECharacteristic::PROPERTY_READ);
   g_BLE_data->addDescriptor(new BLE2902());
 
   BLE_service->start();
