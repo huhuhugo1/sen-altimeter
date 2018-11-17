@@ -3,6 +3,7 @@
 #include <BLEUtils.h>
 #include <BLEServer.h>
 #include <BLE2902.h>
+#include <SimpleKalmanFilter.h>
 #undef B1
 
 // Connection of BMP085
@@ -18,6 +19,7 @@ constexpr char* BLE_NAME = "SENSOR";
 constexpr char* SERVICE_UUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
 constexpr char* CHARACTERISTIC_UUID = "df74a24a-be00-495a-9f5e-b8d87aaba650";
 
+SimpleKalmanFilter g_kalman_filter(1, 1, 0.01);
 BLECharacteristic *g_BLE_data;
 volatile bool g_value_ready = false;
 volatile bool g_device_connected = false;
@@ -176,7 +178,7 @@ void loop() {
 
     if (++counter == (1 << 4)) {
       data.temp = temp_sum >> 4;
-      data.press = press_sum >> 4;
+      data.press = g_kalman_filter.updateEstimate(press_sum >> 4);
       Serial.println(data.temp);
       Serial.println(data.press);
 
